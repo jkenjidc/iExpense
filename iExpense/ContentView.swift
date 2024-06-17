@@ -38,6 +38,7 @@ struct ContentView: View {
     
     @State private var expenses = Expenses()
     @State private var showingAddExpense = false
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationStack {
@@ -60,11 +61,11 @@ struct ContentView: View {
             }
             .navigationTitle("iExpense")
             .toolbar {
-                Button("Add Expense", systemImage: "plus") {
-                    showingAddExpense = true
-                }
-                .sheet(isPresented: $showingAddExpense) {
+                NavigationLink{
                     AddView(expenses: expenses)
+                        .navigationBarBackButtonHidden()
+                } label: {
+                    Image(systemName: "plus")
                 }
             }
         }
@@ -74,6 +75,7 @@ struct ContentView: View {
         expenses.items.remove(atOffsets: offsets)
     }
 }
+
 
 #Preview {
     ContentView()

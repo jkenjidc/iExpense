@@ -5,74 +5,73 @@
 //  Created by Kenji Dela Cruz on 4/19/24.
 //
 
+import SwiftData
 import SwiftUI
 
-struct ExpenseItem: Identifiable, Codable {
-    var id = UUID()
-    let name: String
-    let type: String
-    let amount: Double
-}
-
-@Observable
-class Expenses {
-    var items = [ExpenseItem]() {
-        didSet {
-            if let encoded = try? JSONEncoder().encode(items) {
-                UserDefaults.standard.set(encoded, forKey: "Items")
-            }
-        }
-    }
-    
-    init() {
-        if let savedItems =  UserDefaults.standard.data(forKey: "Items") {
-            if let decodedItems = try? JSONDecoder().decode([ExpenseItem].self, from: savedItems) {
-                items = decodedItems
-                return
-            }
-        }
-    }
-}
-
 struct ContentView: View {
-    
-    @State private var expenses = Expenses()
+    @Environment(\.modelContext) var modelContext
     @State private var showingAddExpense = false
+    @Query var expenses: [Expense]
     @Environment(\.dismiss) var dismiss
+    @State private var sortOrder = [
+        SortDescriptor(\Expense.name),
+        SortDescriptor(\Expense.amount)
+    ]
+    @State private var showFilterType = "e"
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(expenses.items) { item in
-                    HStack{
-                        VStack(alignment: .leading){
-                            Text(item.name)
-                                .font(.headline)
-                            Text(item.type)
+            ExpensesView(expenseType: showFilterType, sortOrder: sortOrder)
+                .navigationTitle("iExpense")
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading){
+                        NavigationLink{
+                            AddView()
+                                .navigationBarBackButtonHidden()
+                        } label: {
+                            Image(systemName: "plus")
                         }
-                        Spacer()
-                        Text(item.amount, format: .currency(code: Locale.current.currency?.identifier ?? "USD"))
-                            .font(item.amount > 10.0 ? 
-                                  (item.amount > 100.0 ? .title : .title2)
-                                  : .title3)
+                    }
+                    //                ToolbarItem(placement: .automatic){
+                    //                    Button(showBusinessExpenses ? "Show all expenses" : "Show Business expenses") {
+                    //                        showBusinessExpenses.toggle()
+                    //                    }
+                    //                }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu("Sort", systemImage: "arrow.up.arrow.down"){
+                            Picker("Sort", selection: $sortOrder) {
+                                Text("Sort by amount")
+                                    .tag([
+                                        SortDescriptor(\Expense.amount),
+                                        SortDescriptor(\Expense.name)
+                                    ])
+                                
+                                Text("Sort by Name")
+                                    .tag([
+                                        SortDescriptor(\Expense.name),
+                                        SortDescriptor(\Expense.amount)
+                                        
+                                    ])
+                            }
+                        }
+                    }
+                    ToolbarItem {
+                        Menu("Sort", systemImage: "dollarsign.arrow.circlepath"){
+                            Picker("Sort", selection: $showFilterType) {
+                                Text("Show Business Only")
+                                    .tag("Business")
+                                
+                                Text("Sort Personal Only")
+                                    .tag("Personal")
+                                
+                                Text("Show All")
+                                    .tag("e")
+                            }
+                        }
                     }
                 }
-                .onDelete(perform: removeItems)
-            }
-            .navigationTitle("iExpense")
-            .toolbar {
-                NavigationLink{
-                    AddView(expenses: expenses)
-                        .navigationBarBackButtonHidden()
-                } label: {
-                    Image(systemName: "plus")
-                }
-            }
         }
         
-    }
-    func removeItems(at offsets: IndexSet) {
-        expenses.items.remove(atOffsets: offsets)
     }
 }
 

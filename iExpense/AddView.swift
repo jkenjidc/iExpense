@@ -9,12 +9,11 @@ import SwiftUI
 
 struct AddView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
     @State private var name = "Expense Title"
     @State private var type = "Personal"
     @State private var amount = 0.0
-    
-    var expenses: Expenses
-    
+        
     let types = ["Business", "Personal"]
     var body: some View {
         NavigationStack {
@@ -38,8 +37,8 @@ struct AddView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        let item = ExpenseItem(name: name, type: type, amount: amount)
-                        expenses.items.append(item)
+                        let item = Expense(name: name, type: type, amount: amount)
+                        modelContext.insert(item)
                         dismiss()
                     }
                 }
@@ -49,5 +48,5 @@ struct AddView: View {
 }
 
 #Preview {
-    AddView(expenses: Expenses())
+    AddView()
 }

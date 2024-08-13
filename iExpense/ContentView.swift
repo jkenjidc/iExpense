@@ -32,11 +32,6 @@ struct ContentView: View {
                             Image(systemName: "plus")
                         }
                     }
-                    //                ToolbarItem(placement: .automatic){
-                    //                    Button(showBusinessExpenses ? "Show all expenses" : "Show Business expenses") {
-                    //                        showBusinessExpenses.toggle()
-                    //                    }
-                    //                }
                     ToolbarItem(placement: .topBarTrailing) {
                         Menu("Sort", systemImage: "arrow.up.arrow.down"){
                             Picker("Sort", selection: $sortOrder) {
